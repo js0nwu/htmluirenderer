@@ -1,5 +1,6 @@
 # htmluirenderer
 
+The purpose of this code is to easily render HTML code to a screenshot.
 
 You need to run npm install to install dependencies. Then run the renderserver.js file
 When the server is running, use testclient.py to send some HTML code to the server, which will render a screenshot.
