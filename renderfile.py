@@ -4,13 +4,15 @@ from tqdm import tqdm
 import os
 from argparse import ArgumentParser
 
-def post_html_to_server(file_path, url):
+def post_html_to_server(file_path, url, skip_existing=True):
     """
     Reads HTML content from a file and posts it to the specified URL.
 
     :param file_path: Path to the HTML file.
     :param url: URL of the server endpoint.
     """
+    if skip_existing and os.path.exists(file_path + ".jpg"):
+        return
     try:
         with open(file_path, 'r') as file:
             html_content = file.read()
