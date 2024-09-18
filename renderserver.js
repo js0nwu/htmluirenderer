@@ -52,6 +52,13 @@ app.post('/render', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while rendering the screenshot');
+        if (page != null) {
+            await page.close();
+        }
+        if (browser != null) {
+            await browser.close()
+        }
+        await initBrowser();
     }
 });
 
