@@ -8,6 +8,7 @@ const port = 3000;
 
 // Global browser instance
 let browser;
+let page;
 
 // Initialize Puppeteer browser
 async function initBrowser() {
@@ -15,6 +16,9 @@ async function initBrowser() {
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
+    page = await browser.newPage();
+    // Emulate iPhone 13
+    await page.emulate(puppeteer.devices['iPhone 13']);
 }
 
 // To handle JSON payloads
@@ -25,13 +29,7 @@ app.post('/render', async (req, res) => {
     if (!req.body.html) {
         return res.status(400).send('No HTML content provided');
     }
-    var page = null;
     try {
-        page = await browser.newPage();
-
-        // Emulate iPhone 13
-        await page.emulate(puppeteer.devices['iPhone 13']);
-
         // Set the HTML content
         await page.setContent(req.body.html);
 
@@ -54,10 +52,6 @@ app.post('/render', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while rendering the screenshot');
-    } finally {
-        if (page != null) {
-            await page.close()
-        }
     }
 });
 
