@@ -25,9 +25,9 @@ app.post('/render', async (req, res) => {
     if (!req.body.html) {
         return res.status(400).send('No HTML content provided');
     }
-
+    var page = null;
     try {
-        const page = await browser.newPage();
+        page = await browser.newPage();
 
         // Emulate iPhone 13
         await page.emulate(puppeteer.devices['iPhone 13']);
@@ -45,8 +45,6 @@ app.post('/render', async (req, res) => {
             })
             .toBuffer();
 
-        await page.close();
-
         // Return the screenshot in the response
         res.writeHead(200, {
             'Content-Type': 'image/png',
@@ -56,6 +54,10 @@ app.post('/render', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while rendering the screenshot');
+    } finally {
+        if (page != null) {
+            await page.close()
+        }
     }
 });
 
