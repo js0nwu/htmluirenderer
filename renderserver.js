@@ -30,6 +30,7 @@ app.post('/render', async (req, res) => {
         return res.status(400).send('No HTML content provided');
     }
     try {
+        await initBrowser();
         // Set the HTML content
         await page.setContent(req.body.html);
 
@@ -60,8 +61,6 @@ app.post('/render', async (req, res) => {
         if (browser && browser.process() != null) {
             browser.process().kill('SIGINT');   
         }
-        
-        await initBrowser();
     }
 });
 
