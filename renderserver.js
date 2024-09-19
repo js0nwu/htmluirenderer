@@ -14,7 +14,7 @@ let page;
 async function initBrowser() {
     browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox']
     });
     page = await browser.newPage();
     // Emulate iPhone 13
@@ -52,12 +52,15 @@ app.post('/render', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while rendering the screenshot');
+
+    } finally {
         if (page != null) {
             await page.close();
         }
-        if (browser != null) {
-            await browser.close()
+        if (browser && browser.process() != null) {
+            browser.process().kill('SIGINT');   
         }
+        
         await initBrowser();
     }
 });
