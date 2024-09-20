@@ -77,7 +77,7 @@ app.post('/render', async (req, res) => {
 
             }
         }
-        await shell.exec('pkill chrome');
+        // await shell.exec('pkill chrome');
         browser = null;
         page = null;
     }
