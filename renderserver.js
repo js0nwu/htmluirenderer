@@ -90,7 +90,9 @@ app.post('/render', async (req, res) => {
         if (counter % restartFrequency == 0) {
             if (page && !page.isClosed()) {
                 await page.close();
-                page = await browser.newPage();
+                if (browser != null) {
+                    page = await browser.newPage();
+                }   
             }
             
         }
