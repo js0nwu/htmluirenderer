@@ -15,7 +15,7 @@ async function initBrowser() {
         headless: true,
         args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox']
     });
-    [page] = browser.pages();
+    [page] = await browser.pages();
     // Emulate iPhone 13
     await page.emulate(puppeteer.devices['iPhone 13']);
 }
