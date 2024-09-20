@@ -88,7 +88,7 @@ app.post('/render', async (req, res) => {
         res.end(resizedScreenshot);
         counter = counter + 1;
         if (counter % restartFrequency == 0) {
-            if (page && page.isOpen()) {
+            if (page && !page.isClosed()) {
                 await page.close();
                 page = await browser.newPage();
             }
