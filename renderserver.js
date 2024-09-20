@@ -6,9 +6,11 @@ const shell = require('shelljs');
 
 const app = express();
 const port = 3000;
+const restartFrequency = 10000;
 
 let browser = null;
 let page = null;
+let counter = 0;
 
 async function initBrowser() {
     browser = await puppeteer.launch({
@@ -18,6 +20,24 @@ async function initBrowser() {
     [page] = await browser.pages();
     // Emulate iPhone 13
     await page.emulate(puppeteer.devices['iPhone 13']);
+}
+
+async function teardownBrowser() {
+    if (page != null) {
+        await page.close();
+    }
+    if (browser != null) {
+        const pages = await browser.pages();
+        for (let i = 0; i < pages.length; i++) {
+            await pages[i].close();
+        }
+        const childProcess = browser.process()
+        if (childProcess) {
+          childProcess.kill(9)
+        }
+    }
+    browser = null;
+    page = null;
 }
 
 // To handle JSON payloads
@@ -53,34 +73,14 @@ app.post('/render', async (req, res) => {
             'Content-Length': resizedScreenshot.length
         });
         res.end(resizedScreenshot);
+        counter = counter + 1;
+        if (counter % restartFrequency == 0) {
+            await teardownBrowser();
+        }
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while rendering the screenshot');
-        if (page != null) {
-            try {
-                await page.close();
-            } catch (e) {
-
-            }
-            
-        }
-        if (browser != null) {
-            try {
-                const pages = await browser.pages();
-                for (let i = 0; i < pages.length; i++) {
-                    await pages[i].close();
-                }
-                const childProcess = browser.process()
-                if (childProcess) {
-                  childProcess.kill(9)
-                }
-            } catch (e) {
-
-            }
-        }
-        // await shell.exec('pkill chrome');
-        browser = null;
-        page = null;
+        await teardownBrowser();
     }
 });
 
