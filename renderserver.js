@@ -29,6 +29,8 @@ app.post('/render', async (req, res) => {
     if (!req.body.html) {
         return res.status(400).send('No HTML content provided');
     }
+    let browser;
+    let page;
     try {
         await initBrowser();
         // Set the HTML content
