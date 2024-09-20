@@ -6,7 +6,7 @@ const shell = require('shelljs');
 
 const app = express();
 const port = 3000;
-const restartFrequency = 10000;
+const restartFrequency = 1000;
 
 let browser = null;
 let page = null;
