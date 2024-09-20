@@ -95,6 +95,8 @@ process.on('SIGINT', () => {
         browser.close().then(() => {
             process.exit(0);
         });
+    } else {
+        process.exit(0);
     }
     
 });
