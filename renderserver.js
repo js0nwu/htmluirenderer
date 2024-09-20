@@ -32,7 +32,7 @@ app.post('/render', async (req, res) => {
 
     try {
         if (browser == null || page == null) {
-            initBrowser();
+            await initBrowser();
         }
         // Set the HTML content
         await page.setContent(req.body.html);
@@ -69,8 +69,8 @@ app.post('/render', async (req, res) => {
             await browser.close()
         }
         if (browser!= null && browser.process() != null) {
-            browser.process().kill('SIGINT');
-            shell.exec('pkill chrome');
+            await browser.process().kill('SIGINT');
+            await shell.exec('pkill chrome');
         }
         browser = null;
         page = null;
