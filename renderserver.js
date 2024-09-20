@@ -6,10 +6,6 @@ const sharp = require('sharp');
 const app = express();
 const port = 3000;
 
-// Global browser instance
-let browser;
-let page;
-
 // Initialize Puppeteer browser
 async function initBrowser() {
     browser = await puppeteer.launch({
