@@ -7,6 +7,19 @@ const shell = require('shelljs');
 const app = express();
 const port = 3000;
 
+let browser = null;
+let page = null;
+
+async function initBrowser() {
+    browser = await puppeteer.launch({
+        headless: true,
+        args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox']
+    });
+    [page] = browser.pages();
+    // Emulate iPhone 13
+    await page.emulate(puppeteer.devices['iPhone 13']);
+}
+
 // To handle JSON payloads
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -15,17 +28,12 @@ app.post('/render', async (req, res) => {
     if (!req.body.html) {
         return res.status(400).send('No HTML content provided');
     }
-    let browser;
-    let page;
+
 
     try {
-        browser = await puppeteer.launch({
-            headless: true,
-            args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox']
-        });
-        page = await browser.newPage();
-        // Emulate iPhone 13
-        await page.emulate(puppeteer.devices['iPhone 13']);
+        if (browser == null || page == null) {
+            initBrowser();
+        }
         // Set the HTML content
         await page.setContent(req.body.html);
 
@@ -64,6 +72,8 @@ app.post('/render', async (req, res) => {
             browser.process().kill('SIGINT');
             shell.exec('pkill chrome');
         }
+        browser = null;
+        page = null;
     }
 });
 
