@@ -6,17 +6,6 @@ const sharp = require('sharp');
 const app = express();
 const port = 3000;
 
-// Initialize Puppeteer browser
-async function initBrowser() {
-    browser = await puppeteer.launch({
-        headless: true,
-        args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox']
-    });
-    page = await browser.newPage();
-    // Emulate iPhone 13
-    await page.emulate(puppeteer.devices['iPhone 13']);
-}
-
 // To handle JSON payloads
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -27,8 +16,15 @@ app.post('/render', async (req, res) => {
     }
     let browser;
     let page;
+
     try {
-        await initBrowser();
+        browser = await puppeteer.launch({
+            headless: true,
+            args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox']
+        });
+        page = await browser.newPage();
+        // Emulate iPhone 13
+        await page.emulate(puppeteer.devices['iPhone 13']);
         // Set the HTML content
         await page.setContent(req.body.html);
 
