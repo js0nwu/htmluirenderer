@@ -58,7 +58,14 @@ app.post('/render', async (req, res) => {
         if (page != null) {
             await page.close();
         }
-        if (browser && browser.process() != null) {
+        if (browser != null) {
+            const pages = await browser.pages();
+            for (let i = 0; i < pages.length; i++) {
+                await pages[i].close();
+            }
+            await browser.close()
+        }
+        if (browser!= null && browser.process() != null) {
             browser.process().kill('SIGINT');   
         }
     }
