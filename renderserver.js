@@ -56,8 +56,6 @@ app.post('/render', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('An error occurred while rendering the screenshot');
-
-    } finally {
         if (page != null) {
             try {
                 await page.close();
@@ -72,7 +70,10 @@ app.post('/render', async (req, res) => {
                 for (let i = 0; i < pages.length; i++) {
                     await pages[i].close();
                 }
-                await browser.close()
+                const childProcess = browser.process()
+                if (childProcess) {
+                  childProcess.kill(9)
+                }
             } catch (e) {
 
             }
