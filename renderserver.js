@@ -59,19 +59,25 @@ app.post('/render', async (req, res) => {
 
     } finally {
         if (page != null) {
-            await page.close();
+            try {
+                await page.close();
+            } catch (e) {
+
+            }
+            
         }
         if (browser != null) {
-            const pages = await browser.pages();
-            for (let i = 0; i < pages.length; i++) {
-                await pages[i].close();
+            try {
+                const pages = await browser.pages();
+                for (let i = 0; i < pages.length; i++) {
+                    await pages[i].close();
+                }
+                await browser.close()
+            } catch (e) {
+
             }
-            await browser.close()
         }
-        if (browser!= null && browser.process() != null) {
-            await browser.process().kill('SIGINT');
-            await shell.exec('pkill chrome');
-        }
+        await shell.exec('pkill chrome');
         browser = null;
         page = null;
     }
