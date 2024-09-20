@@ -85,7 +85,10 @@ app.listen(port, async () => {
 // Graceful shutdown
 process.on('SIGINT', () => {
     console.log('Shutting down...');
-    browser.close().then(() => {
-        process.exit(0);
-    });
+    if (browser != null) {
+        browser.close().then(() => {
+            process.exit(0);
+        });
+    }
+    
 });
