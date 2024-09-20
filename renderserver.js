@@ -6,7 +6,7 @@ const shell = require('shelljs');
 
 const app = express();
 const port = 3000;
-const restartFrequency = 1000;
+const restartFrequency = 100;
 
 let browser = null;
 let page = null;
@@ -23,17 +23,30 @@ async function initBrowser() {
 }
 
 async function teardownBrowser() {
+    console.log("teardown browser");
     if (page != null) {
-        await page.close();
+        try {
+            await page.close();
+        } catch (e) {
+            console.error("couldn't close page");
+        }
     }
     if (browser != null) {
-        const pages = await browser.pages();
-        for (let i = 0; i < pages.length; i++) {
-            await pages[i].close();
+        try {
+            const pages = await browser.pages();
+            for (let i = 0; i < pages.length; i++) {
+                await pages[i].close();
+            }
+        } catch (e) {
+            console.error("couldn't close browser pages");
         }
-        const childProcess = browser.process()
-        if (childProcess) {
-          childProcess.kill(9)
+        try {
+            const childProcess = browser.process()
+            if (childProcess) {
+              childProcess.kill(9)
+            }
+        } catch (e) {
+            console.error("couldn't kill browser");
         }
     }
     browser = null;
