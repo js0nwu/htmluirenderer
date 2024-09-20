@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
+const shell = require('shelljs');
 
 const app = express();
 const port = 3000;
@@ -60,7 +61,8 @@ app.post('/render', async (req, res) => {
             await browser.close()
         }
         if (browser!= null && browser.process() != null) {
-            browser.process().kill('SIGINT');   
+            browser.process().kill('SIGINT');
+            shell.exec('pkill chrome');
         }
     }
 });
