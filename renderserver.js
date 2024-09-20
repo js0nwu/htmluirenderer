@@ -68,7 +68,6 @@ app.post('/render', async (req, res) => {
 // Start server and initialize browser
 app.listen(port, async () => {
     console.log(`Server is listening at http://localhost:${port}`);
-    await initBrowser();
 });
 
 // Graceful shutdown
