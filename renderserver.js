@@ -72,6 +72,7 @@ async function teardownBrowser() {
             console.error("couldn't close browser pages");
         }
     }
+    console.log("done with teardown");
 }
 
 // To handle JSON payloads
