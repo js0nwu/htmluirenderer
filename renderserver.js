@@ -129,6 +129,7 @@ app.post('/render', async (req, res) => {
             res.end(resizedScreenshot);
     
         } catch (error) {
+            console.log("begin handling error");
             console.error(error);
             // await teardownBrowser();
             // await initBrowser();
@@ -139,6 +140,7 @@ app.post('/render', async (req, res) => {
                 }   
             }
             res.status(500).send('An error occurred while rendering the screenshot');
+            console.log("end handling error");
         }
     }
 });
