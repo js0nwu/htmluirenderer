@@ -130,8 +130,14 @@ app.post('/render', async (req, res) => {
     
         } catch (error) {
             console.error(error);
-            await teardownBrowser();
-            await initBrowser();
+            // await teardownBrowser();
+            // await initBrowser();
+            if (page && !page.isClosed()) {
+                await page.close();
+                if (browser != null) {
+                    await initPage();
+                }   
+            }
             res.status(500).send('An error occurred while rendering the screenshot');
         }
     }
