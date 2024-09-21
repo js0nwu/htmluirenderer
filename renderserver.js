@@ -48,7 +48,7 @@ async function initPage() {
 async function initBrowser() {
     browser = await puppeteer.launch({
         headless: true,
-        args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox', '--disable-features=site-per-process']
     });
     await initPage();
 }
