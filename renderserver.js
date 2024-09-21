@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
-const shell = require('shelljs');
 
 const app = express();
 const port = 3000;
@@ -11,6 +10,34 @@ const restartFrequency = 100;
 let browser = null;
 let page = null;
 let counter = 0;
+
+const requestQueue = [];
+
+let processing = false;
+
+// Function to process the next request in the queue
+async function processNext() {
+  if (requestQueue.length === 0 || processing) {
+    return; // No pending requests or one is already processing
+  }
+
+  // Get the next request from the queue
+  const { req, res, next } = requestQueue.shift();
+  
+  // Set the processing flag
+  processing = true;
+
+  try {
+    // Call the route handler
+    await next();
+  } catch (err) {
+    res.status(500).send('An error occurred');
+  } finally {
+    // After processing, unlock and move to the next request
+    processing = false;
+    processNext();
+  }
+}
 
 async function initBrowser() {
     browser = await puppeteer.launch({
@@ -56,6 +83,16 @@ async function teardownBrowser() {
 // To handle JSON payloads
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Middleware to add requests to the queue
+app.use((req, res, next) => {
+  requestQueue.push({ req, res, next });
+
+  // If no requests are currently being processed, start processing
+  if (!processing) {
+    processNext();
+  }
+});
 
 app.post('/render', async (req, res) => {
     if (!req.body.html) {
