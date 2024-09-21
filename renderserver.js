@@ -96,50 +96,48 @@ app.use((req, res, next) => {
 
 app.post('/render', async (req, res) => {
     if (!req.body.html) {
-        return res.status(400).send('No HTML content provided');
-    }
-
-
-    try {
-        if (browser == null || page == null) {
-            await initBrowser();
-        }
-        // Set the HTML content
-        await page.setContent(req.body.html);
-
-        // Taking screenshot
-        const screenshotBuffer = await page.screenshot();
-
-        // Resize the screenshot - max dimension 512px while maintaining aspect ratio
-        const resizedScreenshot = await sharp(screenshotBuffer)
-            .resize(512, 512, {
-                fit: 'inside'
-            })
-            .toBuffer();
-
-
-        counter = counter + 1;
-        if (counter % restartFrequency == 0) {
-            if (page && !page.isClosed()) {
-                await page.close();
-                if (browser != null) {
-                    page = await browser.newPage();
-                }   
+        res.status(400).send('No HTML content provided');
+    } else {
+        try {
+            if (browser == null || page == null) {
+                await initBrowser();
             }
-            
+            // Set the HTML content
+            await page.setContent(req.body.html);
+    
+            // Taking screenshot
+            const screenshotBuffer = await page.screenshot();
+    
+            // Resize the screenshot - max dimension 512px while maintaining aspect ratio
+            const resizedScreenshot = await sharp(screenshotBuffer)
+                .resize(512, 512, {
+                    fit: 'inside'
+                })
+                .toBuffer();
+    
+    
+            counter = counter + 1;
+            if (counter % restartFrequency == 0) {
+                if (page && !page.isClosed()) {
+                    await page.close();
+                    if (browser != null) {
+                        page = await browser.newPage();
+                    }   
+                }
+                
+            }
+            // Return the screenshot in the response
+            res.writeHead(200, {
+                'Content-Type': 'image/png',
+                'Content-Length': resizedScreenshot.length
+            });
+            res.end(resizedScreenshot);
+    
+        } catch (error) {
+            console.error(error);
+            await teardownBrowser();
+            res.status(500).send('An error occurred while rendering the screenshot');
         }
-        
-        // Return the screenshot in the response
-        res.writeHead(200, {
-            'Content-Type': 'image/png',
-            'Content-Length': resizedScreenshot.length
-        });
-        return res.end(resizedScreenshot);
-
-    } catch (error) {
-        console.error(error);
-        await teardownBrowser();
-        return res.status(500).send('An error occurred while rendering the screenshot');
     }
 });
 
