@@ -39,14 +39,18 @@ async function processNext() {
   }
 }
 
+async function initPage() {
+    page = await browser.newPage();
+    // Emulate iPhone 13
+    await page.emulate(puppeteer.devices['iPhone 13']);
+}
+
 async function initBrowser() {
     browser = await puppeteer.launch({
         headless: true,
         args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox']
     });
-    [page] = await browser.pages();
-    // Emulate iPhone 13
-    await page.emulate(puppeteer.devices['iPhone 13']);
+    await initPage();
 }
 
 async function teardownBrowser() {
@@ -67,18 +71,7 @@ async function teardownBrowser() {
         } catch (e) {
             console.error("couldn't close browser pages");
         }
-        try {
-            await browser.close();
-            const childProcess = browser.process()
-            if (childProcess) {
-              childProcess.kill(9)
-            }
-        } catch (e) {
-            console.error("couldn't kill browser");
-        }
     }
-    browser = null;
-    page = null;
 }
 
 // To handle JSON payloads
@@ -100,8 +93,8 @@ app.post('/render', async (req, res) => {
         res.status(400).send('No HTML content provided');
     } else {
         try {
-            if (browser == null || page == null || (page != null && page.isClosed())) {
-                await initBrowser();
+            if (page == null || (page != null && page.isClosed())) {
+                await initPage();
             }
             // Set the HTML content
             await page.setContent(req.body.html);
@@ -122,7 +115,7 @@ app.post('/render', async (req, res) => {
                 if (page && !page.isClosed()) {
                     await page.close();
                     if (browser != null) {
-                        page = await browser.newPage();
+                        await initPage();
                     }   
                 }
                 
@@ -144,6 +137,7 @@ app.post('/render', async (req, res) => {
 
 // Start server and initialize browser
 app.listen(port, async () => {
+    await initBrowser();
     console.log(`Server is listening at http://localhost:${port}`);
 });
 
