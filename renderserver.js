@@ -80,12 +80,7 @@ app.post('/render', async (req, res) => {
             })
             .toBuffer();
 
-        // Return the screenshot in the response
-        res.writeHead(200, {
-            'Content-Type': 'image/png',
-            'Content-Length': resizedScreenshot.length
-        });
-        res.end(resizedScreenshot);
+
         counter = counter + 1;
         if (counter % restartFrequency == 0) {
             if (page && !page.isClosed()) {
@@ -96,10 +91,18 @@ app.post('/render', async (req, res) => {
             }
             
         }
+        
+        // Return the screenshot in the response
+        res.writeHead(200, {
+            'Content-Type': 'image/png',
+            'Content-Length': resizedScreenshot.length
+        });
+        return res.end(resizedScreenshot);
+
     } catch (error) {
         console.error(error);
-        res.status(500).send('An error occurred while rendering the screenshot');
         await teardownBrowser();
+        return res.status(500).send('An error occurred while rendering the screenshot');
     }
 });
 
