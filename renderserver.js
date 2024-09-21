@@ -68,6 +68,7 @@ async function teardownBrowser() {
             console.error("couldn't close browser pages");
         }
         try {
+            await browser.close();
             const childProcess = browser.process()
             if (childProcess) {
               childProcess.kill(9)
@@ -99,7 +100,7 @@ app.post('/render', async (req, res) => {
         res.status(400).send('No HTML content provided');
     } else {
         try {
-            if (browser == null || page == null) {
+            if (browser == null || page == null || (page != null && page.isClosed())) {
                 await initBrowser();
             }
             // Set the HTML content
