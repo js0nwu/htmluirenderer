@@ -49,11 +49,13 @@ async function initPage() {
 
 async function initBrowser() {
     console.log("begin init browser");
+    processing = true;
     browser = await puppeteer.launch({
         headless: true,
         args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox', '--disable-features=site-per-process']
     });
     await initPage();
+    processing = false;
     console.log("end init browser");
 }
 
@@ -108,9 +110,6 @@ app.post('/render', async (req, res) => {
         res.status(400).send('No HTML content provided');
     } else {
         try {
-            if (page == null || (page != null && page.isClosed())) {
-                await initPage();
-            }
             // Set the HTML content
             await page.setContent(req.body.html);
     
@@ -127,13 +126,8 @@ app.post('/render', async (req, res) => {
     
             counter = counter + 1;
             if (counter % restartFrequency == 0) {
-                if (page && !page.isClosed()) {
-                    await page.close();
-                    if (browser != null) {
-                        await initPage();
-                    }   
-                }
-                
+                await teardownBrowser();
+                await initBrowser();
             }
             // Return the screenshot in the response
             res.writeHead(200, {
