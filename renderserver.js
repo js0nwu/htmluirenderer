@@ -22,14 +22,14 @@ async function processNext() {
   }
 
   // Get the next request from the queue
-  const { req, res, next } = requestQueue.shift();
+  const { req, res, handler } = requestQueue.shift();
   
   // Set the processing flag
   processing = true;
 
   try {
-    // Call the route handler
-    await next();
+    // Process the request (calling the handler directly)
+    await handler(req, res);
   } catch (err) {
     res.status(500).send('An error occurred');
   } finally {
@@ -81,7 +81,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Middleware to add requests to the queue
 app.use((req, res, next) => {
-  requestQueue.push({ req, res, next });
+  // Define the handler as a wrapper for `next`
+  const handler = async (req, res) => {
+    try {
+      await next();
+    } catch (err) {
+      res.status(500).send('An error occurred during request processing');
+    }
+  };
+
+  // Push the request into the queue
+  requestQueue.push({ req, res, handler });
 
   // If no requests are currently being processed, start processing
   if (!processing) {
