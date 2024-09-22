@@ -27,9 +27,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/render', async (req, res) => {
-    
+    console.log("start");
     counter = counter + 1;
     if (!req.body.html) {
+        console.log("stop");
         return res.status(400).send('No HTML content provided');
     }
     processing = true;
@@ -69,6 +70,7 @@ app.post('/render', async (req, res) => {
                 console.log(e);
             }
         }
+        console.log("stop");
         // Return the screenshot in the response
         res.writeHead(200, {
             'Content-Type': 'image/png',
@@ -85,6 +87,7 @@ app.post('/render', async (req, res) => {
                 console.log(e);
             }
         }
+        console.log("stop");
         res.status(500).send('An error occurred while rendering the screenshot');
     }
     
