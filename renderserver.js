@@ -65,13 +65,25 @@ app.post('/render', async (req, res) => {
             'Content-Length': resizedScreenshot.length
         });
         res.end(resizedScreenshot);
+        if (page != null) {
+            try {
+                await page.close();
+            } catch (e) {
+                console.log("can't close page try");
+                console.log(e);
+            }
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).send('An error occurred while rendering the screenshot');
-    } finally {
         if (page != null) {
-            await page.close();
+            try {
+                await page.close();
+            } catch (e) {
+                console.log("can't close page catch");
+                console.log(e);
+            }
         }
+        res.status(500).send('An error occurred while rendering the screenshot');
     }
 });
 
