@@ -55,7 +55,7 @@ let processing = false;
 
 app.post('/render', async (req, res) => {
     while (processing) {
-        continue;
+        // continue;
     }
     processing = true;
     if (!req.body.html) {
