@@ -56,7 +56,7 @@ app.post('/render', async (req, res) => {
     } else {
         let page = null;
         try {
-            page = browser.newPage();
+            page = await browser.newPage();
             // Set the HTML content
             await page.setContent(req.body.html);
             console.log("set html");
