@@ -26,7 +26,7 @@ let restartInterval = 100;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/render', async (req, res) => {
+app.post('/render', (req, res) => {
     console.log("start");
     counter = counter + 1;
     if (!req.body.html) {
