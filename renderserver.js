@@ -21,24 +21,22 @@ class RequestQueue {
         this.processNext();
     }
 
-    processNext() {
+    async processNext() {
         if (this.processing) return;
         if (this.queue.length === 0) return;
 
         const { req, res } = this.queue.shift();
         this.processing = true;
 
-        processAsync(req, res)
-            .then((result) => {
-                res.send(result);
-            })
-            .catch((err) => {
-                res.status(500).send(err.message);
-            })
-            .finally(() => {
-                this.processing = false;
-                this.processNext();
-            });
+        try {
+            const result = await processAsync(req, res);
+            res.send(result);
+        } catch (err) {
+            res.status(500).send(err.message);
+        } finally {
+            this.processing = false;
+            this.processNext();
+        }
     }
 }
 
