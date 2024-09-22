@@ -78,7 +78,7 @@ console.log('Received request:', req.body);
 // Simulate an async operation (like a database call or external API call)
 // await new Promise(resolve => setTimeout(resolve, 2000));
   // await processLogic(req, res);
-    withTimeout(async (req, res) => processLogic(req, res), 10000);
+    withTimeout(async () => processLogic(req, res), 10000);
 
 console.log('Finished processing:', req.body);
 });
