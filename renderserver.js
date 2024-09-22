@@ -37,6 +37,7 @@ async function teardownBrowser() {
         try {
             console.log("trying to close browser")
             await browser.close();
+            if (browser && browser.process() != null) browser.process().kill('SIGINT');
         } catch (e) {
             console.error("couldn't close the browser");
             console.log("error message");
