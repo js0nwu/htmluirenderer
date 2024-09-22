@@ -40,17 +40,21 @@ async function processNext() {
 }
 
 async function initPage() {
+    console.log("begin init page");
     page = await browser.newPage();
     // Emulate iPhone 13
     await page.emulate(puppeteer.devices['iPhone 13']);
+    console.log("end init page");
 }
 
 async function initBrowser() {
+    console.log("begin init browser");
     browser = await puppeteer.launch({
         headless: true,
         args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox', '--disable-features=site-per-process']
     });
     await initPage();
+    console.log("end init browser");
 }
 
 async function teardownBrowser() {
