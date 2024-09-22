@@ -23,7 +23,9 @@ let counter = 1;
 let restartInterval = 100;
 
 
-
+// To handle JSON payloads
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 let requestQueue = [];
 let isProcessing = false;
 
@@ -63,25 +65,30 @@ function processNextRequest() {
   next();
 }
 
+app.use(express.json());
 
-
-
-
-// To handle JSON payloads
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
+// Apply the sequential middleware only to the /process route
 app.use('/render', sequentialMiddleware);
 
-app.post('/render', (req, res) => {
-  // // Simulate some processing time
-  // setTimeout(() => {
-  //   console.log('Processing request:', req.body);
-  //   res.send('Request processed');
-  // }, 2000); // Simulated processing delay
-    await processLogic(req, res);
-});
+// Asynchronous route handler for /process endpoint
+app.post('/render', async (req, res) => {
+  try {
+    // Example of asynchronous code inside the handler
+    console.log('Received request:', req.body);
 
+    // Simulate an async operation (like a database call or external API call)
+    // await new Promise(resolve => setTimeout(resolve, 2000));
+      await processLogic(req, res);
+
+    console.log('Finished processing:', req.body);
+    
+    // Send the response after the async operation is completed
+    res.send('Request processed asynchronously');
+  } catch (error) {
+    // Handle any errors that occur
+    res.status(500).send('Error processing request');
+  }
+});
 
 async function processLogic(req, res) {
     console.log("start");
