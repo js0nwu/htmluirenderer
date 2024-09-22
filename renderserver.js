@@ -77,10 +77,23 @@ console.log('Received request:', req.body);
 
 // Simulate an async operation (like a database call or external API call)
 // await new Promise(resolve => setTimeout(resolve, 2000));
-  await processLogic(req, res);
+  // await processLogic(req, res);
+    withTimeout(async (req, res) => processLogic(req, res), 10000);
 
 console.log('Finished processing:', req.body);
 });
+
+async function withTimeout(asyncFn, timeoutMs) {
+  // Create a timeout promise that rejects after the specified time
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`Operation timed out after ${timeoutMs} ms`));
+    }, timeoutMs);
+  });
+
+  // Use Promise.race to race between the async function and the timeout
+  return Promise.race([asyncFn(), timeoutPromise]);
+}
 
 async function processLogic(req, res) {
     console.log("start");
