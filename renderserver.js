@@ -107,18 +107,18 @@ const processRequest = async (req, res, markResponseSent) => {
             let numPages = pages.length;
 
             // Close all open pages before proceeding
-            while (numPages > 0) {
-                const pagesBefore = await browser.pages();
-                for (let i = 0; i < pagesBefore.length; i++) {
-                    try {
-                        await pagesBefore[i].close();
-                    } catch (e) {
-                        console.log("can't close one of the pages?");
-                    }
-                }
-                const pagesAfter = await browser.pages();
-                numPages = pagesAfter.length;
-            }
+            // while (numPages > 0) {
+            //     const pagesBefore = await browser.pages();
+            //     for (let i = 0; i < pagesBefore.length; i++) {
+            //         try {
+            //             await pagesBefore[i].close();
+            //         } catch (e) {
+            //             console.log("can't close one of the pages?");
+            //         }
+            //     }
+            //     const pagesAfter = await browser.pages();
+            //     numPages = pagesAfter.length;
+            // }
             console.log("trying to create new page");
             // Create a new page and set the HTML content
             page = await browser.newPage();
