@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const app = express();
 const port = 3000;
 const restartFrequency = 100;
+const TIMEOUT_LIMIT = 10000; // 10 seconds timeout
 
 let browser = null;
 let counter = 0;
@@ -62,18 +63,41 @@ app.listen(port, async () => {
 
 
 
-
 // Function to process the next request in the queue
 const processNextRequest = async () => {
     if (queue.length > 0 && !processing) {
         processing = true;
         const { req, res } = queue.shift(); // Get the next request from the queue
 
-        await processRequest(req, res); // Process the request
+        await handleRequestWithTimeout(req, res); // Process the request with timeout
 
         processing = false;
         processNextRequest(); // Process the next request
     }
+};
+
+// Function to handle the request with a timeout
+const handleRequestWithTimeout = async (req, res) => {
+    try {
+        await Promise.race([
+            processRequest(req, res), // Main request processing
+            timeout(TIMEOUT_LIMIT, res) // Timeout promise
+        ]);
+    } catch (error) {
+        console.error('Error during request processing:', error);
+        res.status(500).send('An unexpected error occurred.');
+    }
+};
+
+// Helper function to enforce a timeout
+const timeout = (ms, res) => {
+    return new Promise((_, reject) => {
+        setTimeout(() => {
+            console.log("Request timed out");
+            res.status(408).send('Request timed out');
+            reject(new Error('Timeout exceeded'));
+        }, ms);
+    });
 };
 
 // The main logic to process the /process request
@@ -150,7 +174,6 @@ const processRequest = async (req, res) => {
         }
     }
 };
-
 // The /process endpoint with queueing
 app.post('/render', (req, res) => {
     // Add the request to the queue
