@@ -56,6 +56,9 @@ app.post('/render', async (req, res) => {
     } else {
         let page = null;
         try {
+            const pages = await browser.pages();
+            console.log("number of pages");
+            console.log(pages.length);
             page = await browser.newPage();
             // Set the HTML content
             await page.setContent(req.body.html);
@@ -97,8 +100,9 @@ app.post('/render', async (req, res) => {
             res.status(500).send('An error occurred while rendering the screenshot');
             console.log("end handling error");
         } finally {
-            if (page != null && !page.isClosed()) {
-                await page.close();
+            const pages = await browser.pages();
+            for (let i = 0; i < pages.length; i++) {
+                await pages[i].close();
             }
         }
     }
