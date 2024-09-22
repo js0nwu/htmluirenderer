@@ -96,7 +96,7 @@ app.post('/process', (req, res) => {
 
 
 const processAsync = async (req, res) => {
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => new Promise((resolve, reject) => {
         try {
             if (!req.body.html) {
                 res.status(400).send('No HTML content provided');
@@ -165,6 +165,7 @@ const processAsync = async (req, res) => {
             reject(error);
         }
     });
+    return "Processing complete";
 });
 
 // Start server and initialize browser
