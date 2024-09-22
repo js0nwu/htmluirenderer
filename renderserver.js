@@ -88,7 +88,7 @@ async function withTimeout(asyncFn, timeoutMs) {
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => {
         shell.exec('pkill chrome');
-        await initBrowser();
+        browser = null;
       // reject(new Error(`Operation timed out after ${timeoutMs} ms`));
     }, timeoutMs);
   });
@@ -105,14 +105,14 @@ async function processLogic(req, res) {
         return res.status(400).send('No HTML content provided');
     }
     processing = true;
-    if (counter % restartInterval == 0) {
-        shell.exec('pkill chrome');
-        await initBrowser();
-    }
+
     
     let page = null;
     try {
-        
+        if (browser == null || counter % restartInterval == 0) {
+            shell.exec('pkill chrome');
+            await initBrowser();
+        }
         page = await browser.newPage();
         // Emulate iPhone 13
         await page.emulate(puppeteer.devices['iPhone 13']);
