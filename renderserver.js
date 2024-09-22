@@ -10,6 +10,7 @@ const TIMEOUT_LIMIT = 10000; // 10 seconds timeout
 
 let browser = null;
 let counter = 0;
+let resetBrowser = false;
 
 let processing = false; // Mutex to ensure sequential processing
 let queue = []; // Queue for storing requests
@@ -100,8 +101,7 @@ const timeout = (ms, res, markResponseSent) => {
                 console.log("Request timed out");
                 res.status(408).send('Request timed out');
                 markResponseSent(); // Mark that the response has been sent
-                await teardownBrowser();
-                await initBrowser();
+                resetBrowser = true;
             }
             reject(new Error('Timeout exceeded'));
         }, ms);
@@ -110,6 +110,11 @@ const timeout = (ms, res, markResponseSent) => {
 
 // The main logic to process the /process request
 const processRequest = async (req, res, markResponseSent) => {
+    if (resetBrowser) {
+        await teardownBrowser();
+        await initBrowser();
+        resetBrowser = false;
+    }
     if (!req.body.html) {
         res.status(400).send('No HTML content provided');
         markResponseSent();
