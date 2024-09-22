@@ -164,7 +164,7 @@ const processAsync = async (req, res) => {
         }
     });
     return "Processing complete";
-});
+};
 
 // Start server and initialize browser
 app.listen(port, async () => {
