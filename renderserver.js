@@ -60,6 +60,7 @@ async function initBrowser() {
 }
 
 async function teardownBrowser() {
+    processing = true;
     console.log("teardown browser");
     if (page != null) {
         try {
