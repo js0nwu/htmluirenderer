@@ -100,6 +100,8 @@ const timeout = (ms, res, markResponseSent) => {
                 console.log("Request timed out");
                 res.status(408).send('Request timed out');
                 markResponseSent(); // Mark that the response has been sent
+                await teardownBrowser();
+                await initBrowser();
             }
             reject(new Error('Timeout exceeded'));
         }, ms);
