@@ -2,12 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
+const shell = require('shelljs');
+
 
 const app = express();
 const port = 3000;
 
 // Global browser instance
-let browser;
+let browser = null;
 
 // Initialize Puppeteer browser
 async function initBrowser() {
@@ -17,14 +19,24 @@ async function initBrowser() {
     });
 }
 
+let counter = 0;
+let restartInterval = 100;
+
 // To handle JSON payloads
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/render', async (req, res) => {
+    counter = counter + 1;
     if (!req.body.html) {
         return res.status(400).send('No HTML content provided');
     }
+
+    if (counter % restartInterval == 0) {
+        shell.exec('pkill chrome');
+        await initBrowser();
+    }
+    
     let page = null;
     try {
         
