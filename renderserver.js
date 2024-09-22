@@ -21,13 +21,6 @@ async function initBrowser() {
 
 async function teardownBrowser() {
     console.log("teardown browser");
-    if (page != null) {
-        try {
-            await page.close();
-        } catch (e) {
-            console.error("couldn't close page");
-        }
-    }
     if (browser != null) {
         try {
             const pages = await browser.pages();
