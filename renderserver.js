@@ -54,7 +54,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 let semaphore = 0
 
 app.post('/render', async (req, res) => {
-    while (semaphore > 0) {
+    while (semaphore > 1) {
         // continue;
     }
     semaphore = semaphore + 1;
