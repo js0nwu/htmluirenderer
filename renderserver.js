@@ -60,39 +60,39 @@ app.post('/render', async (req, res) => {
             console.log("number of pages");
             console.log(pages.length);
             if (pages.length > 0) {
-                res.status(500).send('An error occurred while making a new page');
-            }
-            page = await browser.newPage();
-            // Set the HTML content
-            await page.setContent(req.body.html);
-            console.log("set html");
-            // Taking screenshot
-            const screenshotBuffer = await page.screenshot();
-            console.log("took screenshot");
-            // Resize the screenshot - max dimension 512px while maintaining aspect ratio
-            const resizedScreenshot = await sharp(screenshotBuffer)
-                .resize(512, 512, {
-                    fit: 'inside'
-                })
-                .toBuffer();
-            console.log("resized image");
-    
-            counter = counter + 1;
-            if (counter % restartFrequency == 0) {
-                console.log("hit restart frequency");
-                await teardownBrowser();
-                await initBrowser();
-                console.log("done with restart");
-            }
-            // Return the screenshot in the response
-            console.log("starting to send response");
-            res.writeHead(200, {
-                'Content-Type': 'image/png',
-                'Content-Length': resizedScreenshot.length
-            });
-            res.end(resizedScreenshot);
-            console.log("sent response");
-    
+                return res.status(500).send('An error occurred while making a new page');
+            } else {
+                page = await browser.newPage();
+                // Set the HTML content
+                await page.setContent(req.body.html);
+                console.log("set html");
+                // Taking screenshot
+                const screenshotBuffer = await page.screenshot();
+                console.log("took screenshot");
+                // Resize the screenshot - max dimension 512px while maintaining aspect ratio
+                const resizedScreenshot = await sharp(screenshotBuffer)
+                    .resize(512, 512, {
+                        fit: 'inside'
+                    })
+                    .toBuffer();
+                console.log("resized image");
+        
+                counter = counter + 1;
+                if (counter % restartFrequency == 0) {
+                    console.log("hit restart frequency");
+                    await teardownBrowser();
+                    await initBrowser();
+                    console.log("done with restart");
+                }
+                // Return the screenshot in the response
+                console.log("starting to send response");
+                res.writeHead(200, {
+                    'Content-Type': 'image/png',
+                    'Content-Length': resizedScreenshot.length
+                });
+                res.end(resizedScreenshot);
+                console.log("sent response");
+            } 
         } catch (error) {
             console.log("begin handling error");
             console.log("error message:");
