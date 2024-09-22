@@ -19,7 +19,7 @@ async function initBrowser() {
     });
 }
 
-let counter = 0;
+let counter = 1;
 let restartInterval = 100;
 
 let processing = false;
