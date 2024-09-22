@@ -170,8 +170,8 @@ const processRequest = async (req, res, markResponseSent) => {
             console.log("error message:");
             console.error(error);
             console.log("---");
-            await teardownBrowser();
-            await initBrowser();
+            // await teardownBrowser();
+            // await initBrowser();
             if (!res.headersSent) {
                 res.status(500).send('An error occurred while rendering the screenshot');
                 markResponseSent(); // Mark that the response has been sent
