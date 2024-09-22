@@ -87,9 +87,9 @@ async function withTimeout(asyncFn, timeoutMs) {
   // Create a timeout promise that rejects after the specified time
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => {
-        shell.exec('pkill chrome');
-        browser = null;
-      // reject(new Error(`Operation timed out after ${timeoutMs} ms`));
+        // shell.exec('pkill chrome');
+        // browser = null;
+      reject(new Error(`Operation timed out after ${timeoutMs} ms`));
     }, timeoutMs);
   });
 
