@@ -94,24 +94,6 @@ app.post('/process', (req, res) => {
     requestQueue.enqueue(req, res);
 });
 
-// Modified processAsync function accepting res
-const processAsync = async (req, res) => {
-    // Set headers inside this function
-    res.setHeader('Custom-Header', 'HeaderValue');
-    res.setHeader('Another-Header', 'AnotherValue');
-
-    // Your processing logic here
-    return new Promise((resolve, reject) => {
-        try {
-            // Simulate processing
-            setTimeout(() => {
-                resolve('Processing complete');
-            }, 1000);
-        } catch (error) {
-            reject(error);
-        }
-    });
-};
 
 const processAsync = async (req, res) => {
     return new Promise((resolve, reject) => {
