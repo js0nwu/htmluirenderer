@@ -120,6 +120,11 @@ app.post('/render', async (req, res) => {
     } else {
         try {
             console.log("begin render");
+            console.log("processing");
+            console.log(processing);
+            console.log("requestQueue");
+            console.log(requestQueue.length);
+            console.log("---");
             // Set the HTML content
             await page.setContent(req.body.html);
             console.log("set html");
