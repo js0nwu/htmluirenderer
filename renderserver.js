@@ -13,6 +13,7 @@ let browser = null;
 
 // Initialize Puppeteer browser
 async function initBrowser() {
+    shell.exec('pkill chrome');
     browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
