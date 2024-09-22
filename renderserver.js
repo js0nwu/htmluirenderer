@@ -21,7 +21,15 @@ async function initBrowser() {
     console.log("begin init browser");
     browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-zygote', '--no-sandbox', '--disable-setuid-sandbox', '--disable-features=site-per-process']
+        args: ['--disable-gpu',
+        '--disable-dev-shm-usage',
+        '--disable-setuid-sandbox',
+        '--no-first-run',
+        '--no-sandbox',
+        '--no-zygote',
+        '--deterministic-fetch',
+        '--disable-features=IsolateOrigins',
+        '--disable-site-isolation-trials']
     });
     console.log("end init browser");
 }
