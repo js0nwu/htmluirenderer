@@ -10,6 +10,9 @@ const restartFrequency = 100;
 let browser = null;
 let counter = 0;
 
+let processing = false; // Mutex to ensure sequential processing
+let queue = []; // Queue for storing requests
+
 async function initBrowser() {
     console.log("begin init browser");
     browser = await puppeteer.launch({
