@@ -92,8 +92,8 @@ app.post('/render', async (req, res) => {
             console.log("error message:");
             console.error(error);
             console.log("---");
-            await teardownBrowser();
-            await initBrowser();
+            // await teardownBrowser();
+            // await initBrowser();
             res.status(500).send('An error occurred while rendering the screenshot');
             console.log("end handling error");
         } finally {
