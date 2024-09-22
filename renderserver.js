@@ -8,58 +8,14 @@ const port = 3000;
 const restartFrequency = 100;
 
 let browser = null;
-let page = null;
 let counter = 0;
-
-const requestQueue = [];
-
-let processing = false;
-
-// Function to process the next request in the queue
-async function processNext() {
-  if (requestQueue.length === 0 || processing) {
-    return; // No pending requests or one is already processing
-  }
-
-  // Get the next request from the queue
-  const { req, res, handler } = requestQueue.shift();
-  
-  // Set the processing flag
-  processing = true;
-
-  try {
-    // Process the request (calling the handler directly)
-    await handler(req, res);
-  } catch (err) {
-    res.status(500).send('An error occurred');
-  } finally {
-    // After processing, unlock and move to the next request
-    processing = false;
-    processNext();
-  }
-}
-
-async function initPage() {
-    console.log("begin init page");
-    page = await browser.newPage();
-    // Emulate iPhone 13
-    await page.emulate(puppeteer.devices['iPhone 13']);
-    console.log("end init page");
-}
 
 async function initBrowser() {
     console.log("begin init browser");
-    if (processing) {
-        console.log("skipping due to processing");
-        return;
-    }
-    processing = true;
     browser = await puppeteer.launch({
         headless: true,
         args: ['--single-process', '--no-zygote', '--no-sandbox', '--disable-setuid-sandbox', '--disable-features=site-per-process']
     });
-    await initPage();
-    processing = false;
     console.log("end init browser");
 }
 
@@ -94,37 +50,13 @@ async function teardownBrowser() {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Middleware to add requests to the queue
-app.use((req, res, next) => {
-  // Define the handler as a wrapper for `next`
-  const handler = async (req, res) => {
-    try {
-      await next();
-    } catch (err) {
-      res.status(500).send('An error occurred during request processing');
-    }
-  };
-
-  // Push the request into the queue
-  requestQueue.push({ req, res, handler });
-
-  // If no requests are currently being processed, start processing
-  if (!processing) {
-    processNext();
-  }
-});
-
 app.post('/render', async (req, res) => {
     if (!req.body.html) {
         res.status(400).send('No HTML content provided');
     } else {
+        let page = null;
         try {
-            console.log("begin render");
-            console.log("processing");
-            console.log(processing);
-            console.log("requestQueue");
-            console.log(requestQueue.length);
-            console.log("---");
+            page = browser.newPage();
             // Set the HTML content
             await page.setContent(req.body.html);
             console.log("set html");
@@ -164,6 +96,10 @@ app.post('/render', async (req, res) => {
             await initBrowser();
             res.status(500).send('An error occurred while rendering the screenshot');
             console.log("end handling error");
+        } finally {
+            if (page != null && !page.isClosed()) {
+                await page.close();
+            }
         }
     }
 });
