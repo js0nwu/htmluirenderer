@@ -62,7 +62,6 @@ app.listen(port, async () => {
 });
 
 
-
 // Function to process the next request in the queue
 const processNextRequest = async () => {
     if (queue.length > 0 && !processing) {
@@ -78,32 +77,40 @@ const processNextRequest = async () => {
 
 // Function to handle the request with a timeout
 const handleRequestWithTimeout = async (req, res) => {
+    let responseSent = false; // Flag to check if the response has been sent
+
     try {
         await Promise.race([
-            processRequest(req, res), // Main request processing
-            timeout(TIMEOUT_LIMIT, res) // Timeout promise
+            processRequest(req, res, () => responseSent = true), // Main request processing
+            timeout(TIMEOUT_LIMIT, res, () => responseSent = true) // Timeout promise
         ]);
     } catch (error) {
-        console.error('Error during request processing:', error);
-        res.status(500).send('An unexpected error occurred.');
+        if (!responseSent) {  // Only send a response if it hasn’t been sent yet
+            console.error('Error during request processing:', error);
+            res.status(500).send('An unexpected error occurred.');
+        }
     }
 };
 
 // Helper function to enforce a timeout
-const timeout = (ms, res) => {
+const timeout = (ms, res, markResponseSent) => {
     return new Promise((_, reject) => {
         setTimeout(() => {
-            console.log("Request timed out");
-            res.status(408).send('Request timed out');
+            if (!res.headersSent) { // Check if headers were already sent
+                console.log("Request timed out");
+                res.status(408).send('Request timed out');
+                markResponseSent(); // Mark that the response has been sent
+            }
             reject(new Error('Timeout exceeded'));
         }, ms);
     });
 };
 
 // The main logic to process the /process request
-const processRequest = async (req, res) => {
+const processRequest = async (req, res, markResponseSent) => {
     if (!req.body.html) {
         res.status(400).send('No HTML content provided');
+        markResponseSent();
     } else {
         let page = null;
         try {
@@ -147,13 +154,16 @@ const processRequest = async (req, res) => {
             }
 
             // Send the screenshot as the response
-            console.log("starting to send response");
-            res.writeHead(200, {
-                'Content-Type': 'image/png',
-                'Content-Length': resizedScreenshot.length
-            });
-            res.end(resizedScreenshot);
-            console.log("sent response");
+            if (!res.headersSent) {
+                console.log("starting to send response");
+                res.writeHead(200, {
+                    'Content-Type': 'image/png',
+                    'Content-Length': resizedScreenshot.length
+                });
+                res.end(resizedScreenshot);
+                console.log("sent response");
+                markResponseSent(); // Mark that the response has been sent
+            }
 
         } catch (error) {
             console.log("begin handling error");
@@ -162,7 +172,10 @@ const processRequest = async (req, res) => {
             console.log("---");
             await teardownBrowser();
             await initBrowser();
-            res.status(500).send('An error occurred while rendering the screenshot');
+            if (!res.headersSent) {
+                res.status(500).send('An error occurred while rendering the screenshot');
+                markResponseSent(); // Mark that the response has been sent
+            }
             console.log("end handling error");
 
         } finally {
@@ -174,6 +187,7 @@ const processRequest = async (req, res) => {
         }
     }
 };
+
 // The /process endpoint with queueing
 app.post('/render', (req, res) => {
     // Add the request to the queue
