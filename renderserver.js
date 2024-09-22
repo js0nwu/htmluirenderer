@@ -59,6 +59,9 @@ app.post('/render', async (req, res) => {
             const pages = await browser.pages();
             console.log("number of pages");
             console.log(pages.length);
+            if (pages.length > 0) {
+                res.status(500).send('An error occurred while making a new page');
+            }
             page = await browser.newPage();
             // Set the HTML content
             await page.setContent(req.body.html);
