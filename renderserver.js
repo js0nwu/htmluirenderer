@@ -72,22 +72,14 @@ app.use('/render', sequentialMiddleware);
 
 // Asynchronous route handler for /process endpoint
 app.post('/render', async (req, res) => {
-  try {
-    // Example of asynchronous code inside the handler
-    console.log('Received request:', req.body);
+// Example of asynchronous code inside the handler
+console.log('Received request:', req.body);
 
-    // Simulate an async operation (like a database call or external API call)
-    // await new Promise(resolve => setTimeout(resolve, 2000));
-      await processLogic(req, res);
+// Simulate an async operation (like a database call or external API call)
+// await new Promise(resolve => setTimeout(resolve, 2000));
+  await processLogic(req, res);
 
-    console.log('Finished processing:', req.body);
-    
-    // Send the response after the async operation is completed
-    res.send('Request processed asynchronously');
-  } catch (error) {
-    // Handle any errors that occur
-    res.status(500).send('Error processing request');
-  }
+console.log('Finished processing:', req.body);
 });
 
 async function processLogic(req, res) {
