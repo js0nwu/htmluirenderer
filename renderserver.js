@@ -22,11 +22,68 @@ async function initBrowser() {
 let counter = 1;
 let restartInterval = 100;
 
+
+
+let requestQueue = [];
+let isProcessing = false;
+
+// Middleware to handle sequential requests
+function sequentialMiddleware(req, res, next) {
+  // Push the current request and response objects to the queue
+  requestQueue.push({ req, res, next });
+
+  // If no request is being processed, start processing
+  if (!isProcessing) {
+    processNextRequest();
+  }
+}
+
+// Function to process the next request in the queue
+function processNextRequest() {
+  if (requestQueue.length === 0) {
+    // No requests left in the queue
+    isProcessing = false;
+    return;
+  }
+
+  // Mark as processing
+  isProcessing = true;
+
+  // Get the next request from the queue
+  const { req, res, next } = requestQueue.shift();
+
+  // Call the next middleware or route handler, and attach an event to run
+  // after the response is finished to continue to the next request
+  res.on('finish', () => {
+    // Once the response is finished, process the next request
+    processNextRequest();
+  });
+
+  // Call the next middleware/handler in the stack
+  next();
+}
+
+
+
+
+
 // To handle JSON payloads
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/render', async (req, res) => {
+app.use('/render', sequentialMiddleware);
+
+app.post('/render', (req, res) => {
+  // // Simulate some processing time
+  // setTimeout(() => {
+  //   console.log('Processing request:', req.body);
+  //   res.send('Request processed');
+  // }, 2000); // Simulated processing delay
+    await processLogic(req, res);
+});
+
+
+async function processLogic(req, res) {
     console.log("start");
     counter = counter + 1;
     if (!req.body.html) {
