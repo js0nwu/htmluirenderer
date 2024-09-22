@@ -10,38 +10,6 @@ const restartFrequency = 100;
 let browser = null;
 let counter = 0;
 
-class RequestQueue {
-    constructor() {
-        this.queue = [];
-        this.processing = false;
-    }
-
-    enqueue(req, res) {
-        this.queue.push({ req, res });
-        this.processNext();
-    }
-
-    async processNext() {
-        if (this.processing) return;
-        if (this.queue.length === 0) return;
-
-        const { req, res } = this.queue.shift();
-        this.processing = true;
-
-        try {
-            const result = await processAsync(req, res);
-            res.send(result);
-        } catch (err) {
-            res.status(500).send(err.message);
-        } finally {
-            this.processing = false;
-            this.processNext();
-        }
-    }
-}
-
-const requestQueue = new RequestQueue();
-
 async function initBrowser() {
     console.log("begin init browser");
     browser = await puppeteer.launch({
@@ -83,94 +51,110 @@ async function teardownBrowser() {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post('/render', (req, res) => {
-    requestQueue.enqueue(req, res);
-});
-
-
-app.post('/process', (req, res) => {
-    requestQueue.enqueue(req, res);
-});
-
-
-const processAsync = async (req, res) => {
-    await new Promise((resolve, reject) => async () => {
-        try {
-            if (!req.body.html) {
-                res.status(400).send('No HTML content provided');
-            } else {
-                let page = null;
-                try {
-                    const pages = await browser.pages();
-                    console.log("number of pages");
-                    console.log(pages.length);
-                    let numPages = pages.length;
-                    while (numPages > 0) {
-                        const pagesBefore = await browser.pages();
-                        for (let i = 0; i < pagesBefore.length; i++) {
-                            await pagesBefore[i].close();
-                        }
-                        const pagesAfter = await browser.pages();
-                        numPages = pagesAfter.length;
-                    }
-                    page = await browser.newPage();
-                    // Set the HTML content
-                    await page.setContent(req.body.html);
-                    console.log("set html");
-                    // Taking screenshot
-                    const screenshotBuffer = await page.screenshot();
-                    console.log("took screenshot");
-                    // Resize the screenshot - max dimension 512px while maintaining aspect ratio
-                    const resizedScreenshot = await sharp(screenshotBuffer)
-                        .resize(512, 512, {
-                            fit: 'inside'
-                        })
-                        .toBuffer();
-                    console.log("resized image");
-            
-                    counter = counter + 1;
-                    if (counter % restartFrequency == 0) {
-                        console.log("hit restart frequency");
-                        await teardownBrowser();
-                        await initBrowser();
-                        console.log("done with restart");
-                    }
-                    // Return the screenshot in the response
-                    console.log("starting to send response");
-                    res.writeHead(200, {
-                        'Content-Type': 'image/png',
-                        'Content-Length': resizedScreenshot.length
-                    });
-                    res.end(resizedScreenshot);
-                    console.log("sent response");
-                } catch (error) {
-                    console.log("begin handling error");
-                    console.log("error message:");
-                    console.error(error);
-                    console.log("---");
-                    await teardownBrowser();
-                    await initBrowser();
-                    res.status(500).send('An error occurred while rendering the screenshot');
-                    console.log("end handling error");
-                } finally {
-                    const pages = await browser.pages();
-                    for (let i = 0; i < pages.length; i++) {
-                        await pages[i].close();
-                    }
-                }
-            }
-        } catch (error) {
-            reject(error);
-        }
-    });
-    return "Processing complete";
-};
-
 // Start server and initialize browser
 app.listen(port, async () => {
     await initBrowser();
     console.log(`Server is listening at http://localhost:${port}`);
 });
+
+
+
+
+// Function to process the next request in the queue
+const processNextRequest = async () => {
+    if (queue.length > 0 && !processing) {
+        processing = true;
+        const { req, res } = queue.shift(); // Get the next request from the queue
+
+        await processRequest(req, res); // Process the request
+
+        processing = false;
+        processNextRequest(); // Process the next request
+    }
+};
+
+// The main logic to process the /process request
+const processRequest = async (req, res) => {
+    if (!req.body.html) {
+        res.status(400).send('No HTML content provided');
+    } else {
+        let page = null;
+        try {
+            const pages = await browser.pages();
+            console.log("number of pages");
+            console.log(pages.length);
+            let numPages = pages.length;
+
+            // Close all open pages before proceeding
+            while (numPages > 0) {
+                const pagesBefore = await browser.pages();
+                for (let i = 0; i < pagesBefore.length; i++) {
+                    await pagesBefore[i].close();
+                }
+                const pagesAfter = await browser.pages();
+                numPages = pagesAfter.length;
+            }
+
+            // Create a new page and set the HTML content
+            page = await browser.newPage();
+            await page.setContent(req.body.html);
+            console.log("set html");
+
+            // Take a screenshot
+            const screenshotBuffer = await page.screenshot();
+            console.log("took screenshot");
+
+            // Resize the screenshot
+            const resizedScreenshot = await sharp(screenshotBuffer)
+                .resize(512, 512, { fit: 'inside' })
+                .toBuffer();
+            console.log("resized image");
+
+            // Restart browser if necessary
+            counter = counter + 1;
+            if (counter % restartFrequency == 0) {
+                console.log("hit restart frequency");
+                await teardownBrowser();
+                await initBrowser();
+                console.log("done with restart");
+            }
+
+            // Send the screenshot as the response
+            console.log("starting to send response");
+            res.writeHead(200, {
+                'Content-Type': 'image/png',
+                'Content-Length': resizedScreenshot.length
+            });
+            res.end(resizedScreenshot);
+            console.log("sent response");
+
+        } catch (error) {
+            console.log("begin handling error");
+            console.log("error message:");
+            console.error(error);
+            console.log("---");
+            await teardownBrowser();
+            await initBrowser();
+            res.status(500).send('An error occurred while rendering the screenshot');
+            console.log("end handling error");
+
+        } finally {
+            // Ensure all pages are closed after processing
+            const pages = await browser.pages();
+            for (let i = 0; i < pages.length; i++) {
+                await pages[i].close();
+            }
+        }
+    }
+};
+
+// The /process endpoint with queueing
+app.post('/render', (req, res) => {
+    // Add the request to the queue
+    queue.push({ req, res });
+    processNextRequest(); // Trigger the processing if idle
+});
+
 
 // Graceful shutdown
 process.on('SIGINT', () => {
