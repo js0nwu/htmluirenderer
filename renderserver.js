@@ -155,7 +155,7 @@ async function processLogic(req, res) {
         res.status(500).send('An error occurred while rendering the screenshot');
     }
     
-});
+}
 
 // Start server and initialize browser
 app.listen(port, async () => {
