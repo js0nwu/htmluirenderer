@@ -49,6 +49,10 @@ async function initPage() {
 
 async function initBrowser() {
     console.log("begin init browser");
+    if (processing) {
+        console.log("skipping due to processing");
+        return;
+    }
     processing = true;
     browser = await puppeteer.launch({
         headless: true,
