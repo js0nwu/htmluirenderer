@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const puppeteer = require('puppeteer');
 const sharp = require('sharp');
+var shell = require('shelljs');
+
 
 const app = express();
 const port = 3000;
@@ -26,29 +28,7 @@ async function initBrowser() {
 
 async function teardownBrowser() {
     console.log("teardown browser");
-    if (browser != null) {
-        console.log("browser is not null");
-        try {
-            console.log("trying to close all pages");
-            const pages = await browser.pages();
-            for (let i = 0; i < pages.length; i++) {
-                await pages[i].close();
-            }
-        } catch (e) {
-            console.error("couldn't close browser pages");
-            console.log("error message");
-            console.log(e);
-        }
-        try {
-            console.log("trying to close browser")
-            await browser.close();
-            if (browser && browser.process() != null) browser.process().kill('SIGINT');
-        } catch (e) {
-            console.error("couldn't close the browser");
-            console.log("error message");
-            console.log(e);
-        }
-    }
+    shell.exec('pkill chrome')
     console.log("done with teardown");
 }
 
