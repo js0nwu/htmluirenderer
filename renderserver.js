@@ -94,7 +94,7 @@ app.post('/process', (req, res) => {
 
 
 const processAsync = async (req, res) => {
-    await new Promise((resolve, reject) => new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => async () => {
         try {
             if (!req.body.html) {
                 res.status(400).send('No HTML content provided');
