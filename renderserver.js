@@ -66,12 +66,7 @@ app.post('/render', async (req, res) => {
 
         
 
-        // Return the screenshot in the response
-        res.writeHead(200, {
-            'Content-Type': 'image/png',
-            'Content-Length': resizedScreenshot.length
-        });
-        res.end(resizedScreenshot);
+
         if (page != null) {
             try {
                 await page.close();
@@ -80,6 +75,13 @@ app.post('/render', async (req, res) => {
                 console.log(e);
             }
         }
+        processing = false;
+        // Return the screenshot in the response
+        res.writeHead(200, {
+            'Content-Type': 'image/png',
+            'Content-Length': resizedScreenshot.length
+        });
+        res.end(resizedScreenshot);
     } catch (error) {
         console.error(error);
         if (page != null) {
@@ -90,9 +92,10 @@ app.post('/render', async (req, res) => {
                 console.log(e);
             }
         }
+        processing = false;
         res.status(500).send('An error occurred while rendering the screenshot');
     }
-    processing = false;
+    
 });
 
 // Start server and initialize browser
