@@ -30,6 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/render', async (req, res) => {
     if (processing) {
+        console.log("rejected from processing");
         return res.status(400).send('need to wait');
     }
     
