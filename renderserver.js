@@ -51,7 +51,13 @@ async function teardownBrowser() {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+let processing = false;
+
 app.post('/render', async (req, res) => {
+    while (processing) {
+        continue;
+    }
+    processing = true;
     if (!req.body.html) {
         res.status(400).send('No HTML content provided');
     } else {
@@ -114,6 +120,7 @@ app.post('/render', async (req, res) => {
                 await pages[i].close();
             }
         }
+        processing = false;
     }
 });
 
