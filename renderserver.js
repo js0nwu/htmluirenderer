@@ -81,6 +81,11 @@ async function teardownBrowser() {
         } catch (e) {
             console.error("couldn't close browser pages");
         }
+        try {
+            await browser.close();
+        } catch (e) {
+            console.error("couldn't close the browser");
+        }
     }
     console.log("done with teardown");
 }
