@@ -16,6 +16,7 @@ async function initBrowser() {
     shell.exec('pkill chrome');
     browser = await puppeteer.launch({
         headless: true,
+        executablePath: "/root/.cache/puppeteer/chromium/linux-1083080/chrome-linux/chrome", // change for path
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none']
     });
 }
