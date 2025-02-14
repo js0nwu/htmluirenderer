@@ -122,7 +122,7 @@ async function processLogic(req, res) {
         await page.setContent(req.body.html);
 
         // Taking screenshot
-        const screenshotBuffer = await page.screenshot();
+        const screenshotBuffer = await page.screenshot({fullPage: true});
 
         // Resize the screenshot - max dimension 512px while maintaining aspect ratio
         const resizedScreenshot = await sharp(screenshotBuffer)
