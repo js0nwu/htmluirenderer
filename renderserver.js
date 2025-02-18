@@ -126,9 +126,6 @@ async function processLogic(req, res) {
 
         // Resize the screenshot - max dimension 512px while maintaining aspect ratio
         const resizedScreenshot = await sharp(screenshotBuffer)
-            .resize(512, 512, {
-                fit: 'inside'
-            })
             .toBuffer();
 
         
